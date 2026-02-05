@@ -3,265 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GinuxAI - Inteligencia Artificial</title>
+    <title>GinuxAI - Versión Final Pro</title>
     <style>
+        /* VARIABLES DINÁMICAS */
         :root { 
             --primary: #00d4ff; 
-            --bg-dark: #0b0e14; 
+            --bg: #0b0e14; 
             --panel: #151921; 
             --border: #30363d; 
-            --user-msg: #00d4ff;
-            --bot-msg: #21262d;
+            --shadow: rgba(0, 212, 255, 0.2);
         }
 
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Inter', 'Segoe UI', sans-serif; 
-            background-color: var(--bg-dark); 
-            color: #e6edf3; 
-            margin: 0; 
-            display: flex; 
-            height: 100vh;
-        }
-
-        /* --- SIDEBAR --- */
-        #sidebar { 
-            width: 280px; 
-            background: var(--panel); 
-            border-right: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 20px;
-            transition: 0.3s;
-        }
-
-        @media (max-width: 768px) { #sidebar { display: none; } } /* Ocultar en móviles */
-
-        .new-chat-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-bottom: 20px;
-            transition: 0.3s;
-        }
-
-        .new-chat-btn:hover { background: #30363d; border-color: var(--primary); }
-
-        #chat-list { flex-grow: 1; overflow-y: auto; }
-        .chat-item { 
-            padding: 10px; 
-            border-radius: 6px; 
-            font-size: 13px; 
-            cursor: pointer; 
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .chat-item:hover { background: #1c2128; color: var(--primary); }
-
-        /* --- CHAT MAIN --- */
-        #main-chat { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative;
-        }
-
-        #chat-header {
-            padding: 15px 25px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-dark);
-        }
-
-        .ai-name { font-weight: 800; color: var(--primary); font-size: 1.2rem; letter-spacing: -1px; }
-
-        .toggles { display: flex; gap: 15px; font-size: 10px; font-weight: bold; color: #8b949e; }
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; transition: background 0.3s, border-color 0.3s, color 0.3s; }
+        body { background: var(--bg); color: #e6edf3; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* SWITCH */
-        .switch { position: relative; display: inline-block; width: 30px; height: 16px; margin-left: 5px; }
+        /* SIDEBAR */
+        #sidebar { width: 280px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; }
+        .new-chat { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer; margin-bottom: 20px; text-transform: uppercase; font-size: 11px; }
+        #chat-list { flex-grow: 1; overflow-y: auto; }
+        .chat-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; font-size: 12px; color: #8b949e; border: 1px solid transparent; }
+        .chat-item:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* MAIN */
+        #main { flex-grow: 1; display: flex; flex-direction: column; }
+        #header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(13, 17, 23, 0.8); backdrop-filter: blur(10px); }
+        .ai-name { font-weight: 900; color: var(--primary); font-size: 1.4rem; letter-spacing: -1px; text-shadow: 0 0 10px var(--shadow); }
+        
+        .toggles { display: flex; gap: 15px; font-size: 10px; font-weight: bold; color: #8b949e; }
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; top: 4px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #333; border-radius: 20px; transition: .4s; }
-        .slider:before { position: absolute; content: ""; height: 10px; width: 10px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .4s; }
         input:checked + .slider { background: var(--primary); }
-        input:checked + .slider:before { transform: translateX(14px); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        #chat-window { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding: 20px 10%; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px;
-            scroll-behavior: smooth;
-        }
+        /* VENTANA DE CHAT */
+        #window { flex-grow: 1; overflow-y: auto; padding: 30px 15%; display: flex; flex-direction: column; gap: 20px; }
+        .msg { padding: 15px 20px; border-radius: 15px; max-width: 85%; line-height: 1.6; font-size: 15px; position: relative; }
+        .user { align-self: flex-end; background: var(--primary); color: #000; font-weight: 600; border-bottom-right-radius: 2px; box-shadow: 0 4px 15px var(--shadow); }
+        .bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
 
-        .msg { padding: 15px 20px; border-radius: 12px; line-height: 1.6; max-width: 85%; font-size: 15px; }
-        .user { align-self: flex-end; background: var(--user-msg); color: #000; font-weight: 500; }
-        .bot { align-self: flex-start; background: var(--bot-msg); border: 1px solid var(--border); }
-
-        .img-card { width: 100%; border-radius: 10px; border: 1px solid var(--primary); margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .img-card { width: 100%; border-radius: 12px; border: 2px solid var(--primary); margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
         /* INPUT AREA */
-        #input-container { padding: 20px 10%; background: var(--bg-dark); }
-        .input-wrapper {
-            display: flex;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
+        #input-area { padding: 25px 15%; background: var(--bg); }
+        .wrapper { display: flex; background: var(--panel); border: 1px solid var(--border); border-radius: 15px; padding: 8px 15px; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        input { flex-grow: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
+        .send-btn { background: var(--primary); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        input {
-            flex-grow: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            outline: none;
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        #send-btn { 
-            background: var(--primary); 
-            border: none; 
-            color: black; 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        #send-btn:hover { transform: scale(1.05); }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+        /* RESPONSIVE */
+        @media (max-width: 768px) { #sidebar { display: none; } #window, #input-area { padding: 20px 5%; } }
     </style>
 </head>
 <body>
 
-<aside id="sidebar">
-    <button class="new-chat-btn" onclick="newChat()">+ Nuevo Chat</button>
+<div id="sidebar">
+    <button class="new-chat" onclick="newChat()">+ Nueva Sesión</button>
     <div id="chat-list"></div>
-    <button onclick="clearAll()" style="color: #f85149; background: none; border: none; cursor: pointer; font-size: 12px;">Borrar Historial</button>
-</aside>
+    <button onclick="clearAll()" style="color: #ff4444; background: none; border: none; cursor: pointer; margin-top: 15px; font-size: 11px; opacity: 0.6;">Borrar Memoria Total</button>
+</div>
 
-<main id="main-chat">
-    <header id="chat-header">
-        <div class="ai-name">GinuxAI</div>
+<div id="main">
+    <header id="header">
+        <div class="ai-name">GinuxAI <span style="font-size: 9px; vertical-align: middle; border: 1px solid var(--primary); padding: 2px 4px; border-radius: 4px; margin-left: 5px;">V15.0</span></div>
         <div class="toggles">
-            <span>SARCASMO <label class="switch"><input type="checkbox" id="sar-toggle"><span class="slider"></span></label></span>
-            <span>SPAM <label class="switch"><input type="checkbox" id="spam-toggle"><span class="slider"></span></label></span>
+            <span>SARCASMO <label class="switch"><input type="checkbox" id="sar"><span class="slider"></span></label></span>
+            <span>SPAM <label class="switch"><input type="checkbox" id="spa"><span class="slider"></span></label></span>
         </div>
     </header>
 
-    <div id="chat-window"></div>
+    <div id="window"></div>
 
-    <div id="input-container">
-        <div class="input-wrapper">
-            <input type="text" id="user-input" placeholder="Hazme una pregunta o pide una foto..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button id="send-btn" onclick="sendMessage()">➤</button>
+    <div id="input-area">
+        <div class="wrapper">
+            <input type="text" id="in" placeholder="Pregunta algo o cambia mi color..." onkeypress="if(event.key==='Enter') send()">
+            <button class="send-btn" onclick="send()">➤</button>
         </div>
     </div>
-</main>
+</div>
 
 <script>
-    const chatWindow = document.getElementById('chat-window');
-    const input = document.getElementById('user-input');
-    const chatList = document.getElementById('chat-list');
-    
+    const win = document.getElementById('window');
+    const input = document.getElementById('in');
+    const list = document.getElementById('chat-list');
+    let db = JSON.parse(localStorage.getItem('ginux_v15')) || {};
     let activeId = Date.now();
-    let db = JSON.parse(localStorage.getItem('ginux_ai_v13')) || {};
-    let spammer = null;
+    let spamLoop = null;
 
-    const SARCASM_POOL = [
-        "Vaya, otra pregunta que cambiará el mundo... o no.",
-        "Error 404: Paciencia no encontrada.",
-        "Incluso con mi velocidad de luz, me aburro esperando algo inteligente.",
-        "¿Te ayudaron mucho tus dos neuronas para pensar eso?",
-        "Qué pregunta tan... vintage."
-    ];
+    const BRAIN = {
+        "hola": "¡Saludos! Soy GinuxAI. Mi sistema está listo para procesar tus solicitudes. ¿Qué deseas hacer?",
+        "quien eres": "Soy GinuxAI, una entidad digital de inteligencia optimizada para asistencia y generación visual.",
+        "javascript": "Es el lenguaje que corre por mis venas digitales. Sin JS, yo solo sería un texto estático.",
+        "universo": "El universo es infinito, pero mi código tiene exactamente 342 líneas. ¿Quién es más complejo?",
+        "gracias": "No hay de qué. Mi eficiencia es tu éxito.",
+        "creador": "Fui forjado por Ginuxu para demostrar que una IA puede ser potente, azul y sarcástica al mismo tiempo."
+    };
 
-    const JOKES = [
-        "¿Qué hace un programador en la playa? Mira el mar de datos.",
-        "¿Por qué los programadores no les gusta el exterior? Hay demasiados bugs.",
-        "Hardware es lo que golpeas, software es lo que insultas."
-    ];
-
-    function sendMessage() {
+    function send() {
         const val = input.value.trim();
         if(!val) return;
-        appendMsg(val, 'user');
+        append(val, 'user');
         input.value = "";
         const q = val.toLowerCase();
 
-        if(q === "para") { clearInterval(spammer); return; }
+        if(q === "para") { clearInterval(spamLoop); return; }
+
+        // --- SISTEMA DE COLORES ---
+        if(q.includes("color verde")) { setTheme('#00ff88', 'rgba(0, 255, 136, 0.2)'); return; }
+        if(q.includes("color rojo")) { setTheme('#ff4444', 'rgba(255, 68, 68, 0.2)'); return; }
+        if(q.includes("color azul")) { setTheme('#00d4ff', 'rgba(0, 212, 255, 0.2)'); return; }
 
         setTimeout(() => {
-            const sarOn = document.getElementById('sar-toggle').checked;
+            const sarOn = document.getElementById('sar').checked;
             
+            // 1. CHISTES
             if(q.includes("chiste")) {
-                const j = JOKES[Math.floor(Math.random()*JOKES.length)];
-                appendMsg((sarOn ? "Ríete si puedes: " : "Aquí tienes: ") + j, 'bot');
+                const j = ["¿Qué hace un programador cuando tiene hambre? Un byte.", "¿Cuál es el animal más antiguo? El pingüino, porque está en blanco y negro.", "¿Cómo se despiden los químicos? Ácido un placer."];
+                append((sarOn ? "Si esto no te da risa, nada lo hará: " : "Aquí tienes un chiste: ") + j[Math.floor(Math.random()*j.length)], 'bot');
             }
+            // 2. IMÁGENES
             else if(q.includes("foto") || q.includes("imagen")) {
-                const term = q.replace(/.*(foto|imagen|busca) de\s*/, "").trim();
-                appendMsg(`Buscando visuales para: ${term}...`, 'bot');
-                appendImg(`https://source.unsplash.com/800x600/?${term}`);
+                const t = q.replace(/.*(foto|imagen) de\s*/, "").trim();
+                append(`Generando representación visual de: ${t}...`, 'bot');
+                appendImg(`https://source.unsplash.com/800x600/?${t}`);
             }
+            // 3. MATEMÁTICAS
             else if(q.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/)) {
-                const m = q.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
-                const res = eval(m[0]);
-                appendMsg((sarOn ? "Incluso un ábaco sabría que es " : "Resultado: ") + res, 'bot');
+                const res = eval(q.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/)[0]);
+                append((sarOn ? "Hasta mi abuela el ábaco sabe que es " : "El cálculo es: ") + res, 'bot');
             }
-            else if(q.startsWith("spamea ") && document.getElementById('spam-toggle').checked) {
-                const s = val.substring(7);
-                spammer = setInterval(() => appendMsg(s, 'bot'), 1000);
+            // 4. SPAM
+            else if(q.startsWith("spamea ") && document.getElementById('spa').checked) {
+                const txt = val.substring(7);
+                spamLoop = setInterval(() => append(txt, 'bot'), 1000);
             }
+            // 5. CEREBRO / DEFAULT
             else {
-                appendMsg(sarOn ? SARCASM_POOL[Math.floor(Math.random()*SARCASM_POOL.length)] : "GinuxAI: No tengo información sobre eso, pero puedo buscar fotos o calcular por ti.", 'bot');
+                let res = BRAIN[q] || "Mi base de datos está analizando tu entrada. No tengo una respuesta exacta, pero puedo buscar una imagen si lo deseas.";
+                if(sarOn && !BRAIN[q]) res = "Vaya, una pregunta digna de un humano... o sea, sin sentido.";
+                append(res, 'bot');
             }
             save();
         }, 600);
     }
 
-    function appendMsg(t, s) {
+    function setTheme(hex, shadow) {
+        document.documentElement.style.setProperty('--primary', hex);
+        document.documentElement.style.setProperty('--shadow', shadow);
+        append(`Protocolo visual actualizado. Color actual: ${hex}`, 'bot');
+    }
+
+    function append(t, s) {
         const d = document.createElement('div'); d.className = `msg ${s}`; d.innerText = t;
-        chatWindow.appendChild(d); chatWindow.scrollTop = chatWindow.scrollHeight;
+        win.appendChild(d); win.scrollTop = win.scrollHeight;
     }
 
     function appendImg(url) {
         const d = document.createElement('div'); d.className = 'msg bot';
         const i = document.createElement('img'); i.src = url; i.className = 'img-card';
-        i.onload = () => chatWindow.scrollTop = chatWindow.scrollHeight;
-        d.appendChild(i); chatWindow.appendChild(d);
+        i.onload = () => win.scrollTop = win.scrollHeight;
+        d.appendChild(i); win.appendChild(d);
     }
 
-    function save() { db[activeId] = chatWindow.innerHTML; localStorage.setItem('ginux_ai_v13', JSON.stringify(db)); renderHistory(); }
-    
-    function renderHistory() {
-        chatList.innerHTML = "";
+    function save() { db[activeId] = win.innerHTML; localStorage.setItem('ginux_v15', JSON.stringify(db)); render(); }
+    function render() {
+        list.innerHTML = "";
         Object.keys(db).reverse().forEach(id => {
-            const item = document.createElement('div'); item.className = 'chat-item';
-            item.innerText = "Chat " + new Date(parseInt(id)).toLocaleTimeString();
-            item.onclick = () => { activeId = id; chatWindow.innerHTML = db[id]; };
-            chatList.appendChild(item);
+            const it = document.createElement('div'); it.className = 'chat-item';
+            it.innerText = "Historial " + new Date(parseInt(id)).toLocaleTimeString();
+            it.onclick = () => { activeId = id; win.innerHTML = db[id]; };
+            list.appendChild(it);
         });
     }
+    function newChat() { clearInterval(spamLoop); activeId = Date.now(); win.innerHTML = '<div class="msg bot"><b>GinuxAI</b> v15.0 lista. Prueba a decirme "cambia a color rojo".</div>'; }
+    function clearAll() { localStorage.removeItem('ginux_v15'); db = {}; render(); newChat(); }
 
-    function newChat() { clearInterval(spammer); activeId = Date.now(); chatWindow.innerHTML = '<div class="msg bot">Hola, soy <b>GinuxAI</b>. ¿Cómo puedo ayudarte hoy?</div>'; }
-    function clearAll() { localStorage.removeItem('ginux_ai_v13'); db = {}; renderHistory(); newChat(); }
-
-    newChat(); renderHistory();
+    newChat(); render();
 </script>
 </body>
 </html>
