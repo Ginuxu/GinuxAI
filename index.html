@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GinuxAI - Smart Brain v16.2</title>
+    <title>GinuxAI v16.3 - Fixed Edition</title>
     <style>
         :root { --primary: #00d4ff; --bg: #0b0e14; --panel: #151921; --border: #30363d; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: 0.3s ease; }
         body { background: var(--bg); color: #e6edf3; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* SIDEBAR ADAPTATIVO */
@@ -24,9 +24,13 @@
 
         /* VENTANA DE CHAT */
         #window { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 110px; }
-        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
         .user { align-self: flex-end; background: var(--primary); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
         .bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+
+        /* IMÁGENES GENERADAS */
+        .img-container { width: 100%; max-width: 500px; margin-top: 10px; border-radius: 12px; overflow: hidden; border: 2px solid var(--primary); box-shadow: 0 0 20px var(--primary); }
+        .img-card { width: 100%; display: block; background: #000; min-height: 200px; }
 
         .search-anim { color: var(--primary); font-size: 11px; margin-bottom: 5px; opacity: 0.8; letter-spacing: 1px; }
 
@@ -55,12 +59,12 @@
     <header id="header">
         <button class="menu-btn" onclick="event.stopPropagation(); toggleMenu()">☰</button>
         <div style="font-weight: 900; color: var(--primary); font-size: 1.5rem;">GinuxAI</div>
-        <div style="font-size: 9px; opacity: 0.5;">SMART BRAIN v16.2</div>
+        <div style="font-size: 9px; opacity: 0.5;">FIXED v16.3</div>
     </header>
     <div id="window"></div>
     <div id="input-area">
         <div class="wrapper">
-            <input type="text" id="in" placeholder="Escribe tu pregunta..." onkeypress="if(event.key==='Enter') send()">
+            <input type="text" id="in" placeholder="Escribe tu pregunta o pide una foto..." onkeypress="if(event.key==='Enter') send()">
             <button class="send-btn" onclick="send()">➤</button>
         </div>
     </div>
@@ -71,20 +75,11 @@
     const input = document.getElementById('in');
     const list = document.getElementById('chat-list');
     const sidebar = document.getElementById('sidebar');
-    let db = JSON.parse(localStorage.getItem('ginux_v16_2')) || {};
+    let db = JSON.parse(localStorage.getItem('ginux_v16_3')) || {};
     let activeId = Date.now();
 
     function toggleMenu() { sidebar.classList.toggle('open'); }
     function closeMenuIfOpen() { if(window.innerWidth <= 768 && sidebar.classList.contains('open')) sidebar.classList.remove('open'); }
-
-    // DICCIONARIO DE CONOCIMIENTO EXPANDIDO
-    const DATA_BANK = {
-        tecnologia: "La tecnología avanza hacia la integración de la IA y la computación cuántica para resolver problemas complejos en segundos.",
-        python: "Python es un lenguaje de programación de alto nivel, famoso por su legibilidad y su uso masivo en Inteligencia Artificial y Ciencia de Datos.",
-        espacio: "El espacio exterior comienza a unos 100 km sobre la Tierra. Es un vacío casi perfecto con billones de galaxias por descubrir.",
-        robots: "Los robots modernos combinan mecánica de precisión con redes neuronales para imitar comportamientos humanos y automatizar tareas peligrosas.",
-        comida: "La gastronomía es el estudio de la relación entre cultura y alimento. Es una de las formas de arte más antiguas de la humanidad."
-    };
 
     function send() {
         const val = input.value.trim();
@@ -93,42 +88,33 @@
         input.value = "";
         
         const s = document.createElement('div'); s.className = 'search-anim';
-        s.innerText = "🔍 Buscando en la red y procesando datos...";
+        s.innerText = "🔍 Procesando red neuronal e imágenes...";
         win.appendChild(s); win.scrollTop = win.scrollHeight;
 
         setTimeout(() => {
             s.remove();
             generateSmartResponse(val.toLowerCase());
-        }, 1500);
+        }, 1200);
     }
 
     function generateSmartResponse(q) {
         let response = "";
         
-        // Comprobación de palabras clave para dar respuestas reales
-        if (q.includes("quien eres") || q.includes("quién eres")) {
-            response = "Soy GinuxAI, una red neuronal diseñada para procesar información web y asistirte en tareas digitales.";
-        } else if (q.includes("javascript")) {
-            response = "JavaScript es el lenguaje que me permite funcionar ahora mismo. Se usa para crear interactividad en páginas web.";
-        } else if (q.includes("python") || q.includes("programacion")) {
-            response = DATA_BANK.python;
-        } else if (q.includes("espacio") || q.includes("universo") || q.includes("estrellas")) {
-            response = DATA_BANK.espacio;
-        } else if (q.includes("robot") || q.includes("ia") || q.includes("inteligencia")) {
-            response = DATA_BANK.robots;
-        } else if (q.includes("hola")) {
-            response = "¡Hola! He analizado tu saludo. Estoy listo para buscar cualquier información que necesites.";
-        } else if (q.includes("foto") || q.includes("imagen")) {
-            const t = q.replace(/.*(foto|imagen) de\s*/, "").trim();
-            appendImg(`https://source.unsplash.com/800x600/?${t}`);
+        if (q.includes("foto de") || q.includes("imagen de")) {
+            const subject = q.split(/foto de|imagen de/)[1].trim();
+            append(`Generando imagen de alta calidad sobre: ${subject}...`, 'bot');
+            appendImg(`https://image.pollinations.ai/prompt/${encodeURIComponent(subject)}?width=1080&height=1080&nologo=true`);
             return;
-        } else {
-            // LÓGICA DE RESPUESTA DINÁMICA SI NO SABE EL TEMA EXACTO
-            const topics = ["tecnología", "ciencia", "historia", "tendencias actuales"];
-            const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-            response = `He analizado tu consulta sobre "${q.toUpperCase()}". \n\nSegún los datos recopilados en foros y sitios de ${randomTopic}, esto se relaciona con la evolución digital y el impacto que tiene en el usuario moderno. ¿Te gustaría que busque una imagen específica para ilustrarlo?`;
         }
 
+        const brain = {
+            "hola": "¡Hola! He analizado tu conexión. Estoy listo para asistirte.",
+            "quien eres": "Soy GinuxAI, tu asistente de inteligencia avanzada con capacidad de generación visual.",
+            "universo": "El universo es vasto. Contiene aproximadamente 2 billones de galaxias según los últimos escaneos de datos."
+        };
+
+        response = brain[q] || `He procesado tu consulta sobre "${q.toUpperCase()}". \n\nBasado en mi red de conocimientos, esto representa un avance significativo en su área. ¿Deseas que genere una imagen detallada sobre esto?`;
+        
         append(response, 'bot');
         save();
     }
@@ -139,14 +125,31 @@
     }
 
     function appendImg(url) {
-        const d = document.createElement('div'); d.className = 'msg bot';
-        const i = document.createElement('img'); i.src = url; i.style = "width:100%; border-radius:12px; border:2px solid var(--primary); margin-top:10px;";
-        i.onload = () => win.scrollTop = win.scrollHeight;
-        d.appendChild(i); win.appendChild(d);
+        const container = document.createElement('div');
+        container.className = 'msg bot';
+        
+        const imgFrame = document.createElement('div');
+        imgFrame.className = 'img-container';
+        
+        const img = document.createElement('img');
+        img.className = 'img-card';
+        img.src = url;
+        img.alt = "Imagen generada por GinuxAI";
+        
+        // Manejo de errores para que no aparezca el icono roto
+        img.onerror = function() {
+            container.innerText = "⚠️ Error al generar la imagen. Intenta con otra descripción.";
+        };
+
+        img.onload = () => win.scrollTop = win.scrollHeight;
+        
+        imgFrame.appendChild(img);
+        container.appendChild(imgFrame);
+        win.appendChild(container);
         save();
     }
 
-    function save() { db[activeId] = win.innerHTML; localStorage.setItem('ginux_v16_2', JSON.stringify(db)); render(); }
+    function save() { db[activeId] = win.innerHTML; localStorage.setItem('ginux_v16_3', JSON.stringify(db)); render(); }
     
     function render() {
         list.innerHTML = "";
@@ -158,7 +161,7 @@
         });
     }
 
-    function newChat() { activeId = Date.now(); win.innerHTML = '<div class="msg bot">GinuxAI Smart Brain v16.2 activo.</div>'; closeMenuIfOpen(); }
+    function newChat() { activeId = Date.now(); win.innerHTML = '<div class="msg bot">GinuxAI v16.3 Lista. Pídeme una "foto de un astronauta en Marte".</div>'; closeMenuIfOpen(); }
     newChat(); render();
 </script>
 </body>
